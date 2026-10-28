@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Operations Overview — TRACE-X{% endblock %}
+{% block content %}
+<section class="hero hero-pro" data-aos="fade-up">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <i class="hero-orb orb-a" aria-hidden="true"></i><i class="hero-orb orb-b" aria-hidden="true"></i>
+  <div class="hero-kicker"><span class="status-dot"></span> SOC OPERATIONS · EVIDENCE INTEGRITY MONITORING</div>
+  <div class="hero-guardian" aria-hidden="true"><div class="guardian-halo"></div><div class="guardian-ring"></div><div class="guardian-head"><i></i><b></b></div><div class="guardian-body"><span></span></div><div class="guardian-sigil">TX</div></div>
+  <div class="hero-scanline" aria-hidden="true"></div>
+  <h1>Investigate with evidence.<br><span>Decide with confidence.</span></h1>
+  <p class="hero-copy">TRACE-X connects artifacts, reconstructs attack timelines, correlates findings and preserves an auditable chain of custody for every conclusion.</p>
+  <div class="hero-actions row">
+    <a class="btn" href="{% url 'investigation_create' %}">+ Open investigation</a>
+    <a class="btn ghost" href="{% url 'investigation_list' %}">View case queue →</a>
+  </div>
+  <div class="hero-trust"><span>SHA-256</span><span>Chain of custody</span><span>MITRE ATT&amp;CK</span><span>Evidence-linked</span><span>Audit trail</span></div>
+</section>
+
+<section class="stats" data-aos="fade-up" data-aos-delay="80">
+  <div class="stat"><span class="num">{{ total_cases }}</span><span>Active investigations</span></div>
+  <div class="stat"><span class="num">{{ total_evidence }}</span><span>Evidence artifacts</span></div>
+  <div class="stat"><span class="num">{{ total_events }}</span><span>Timeline events</span></div>
+  <div class="stat"><span class="num">{{ total_findings }}</span><span>Security findings</span></div>
+</section>
+
+<div class="grid2">
+<section class="card" data-aos="fade-up" data-aos-delay="120">
+  <h2>Investigator workspace</h2>
+  <div class="list">
+    <div class="row" style="justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)"><div><strong>Case queue</strong><div class="muted small">Search, triage and open investigations</div></div><a class="btn ghost" href="{% url 'investigation_list' %}">Open</a></div>
+    <div class="row" style="justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)"><div><strong>New evidence</strong><div class="muted small">Fingerprint artifacts before analysis</div></div><a class="btn ghost" href="{% url 'investigation_create' %}">Start</a></div>
+    <div class="row" style="justify-content:space-between;padding:12px 0"><div><strong>Access &amp; audit</strong><div class="muted small">Review investigators and accountability</div></div><a class="btn ghost" href="{% url 'users_dashboard' %}">Review</a></div>
+  </div>
+</section>
+<section class="card" data-aos="fade-up" data-aos-delay="180">
+  <h2>Investigation pipeline</h2>
+  <div class="list">
+    <div style="padding:12px 0;border-bottom:1px solid var(--line)"><div class="row" style="justify-content:space-between"><strong>01 · Collect</strong><span class="pill">Evidence</span></div><div class="muted small">Upload and fingerprint original artifacts.</div></div>
+    <div style="padding:12px 0;border-bottom:1px solid var(--line)"><div class="row" style="justify-content:space-between"><strong>02 · Reconstruct</strong><span class="pill">Timeline</span></div><div class="muted small">Normalize events and correlate indicators.</div></div>
+    <div style="padding:12px 0"><div class="row" style="justify-content:space-between"><strong>03 · Prove</strong><span class="pill ok">Integrity</span></div><div class="muted small">Trace findings back to evidence and verify the chain.</div></div>
+  </div>
+</section>
+</div>
+
+<section class="card" data-aos="fade-up" data-aos-delay="240" style="margin-top:18px">
+  <div class="row header-row" style="margin-bottom:12px"><div><h2 style="margin-bottom:2px">Recent case activity</h2><div class="muted small">Most recently created investigations available to your account.</div></div><a href="{% url 'investigation_list' %}">View all →</a></div>
+  {% if investigations %}
+  <table class="tbl"><tr><th>Case</th><th>Investigation</th><th>Status</th><th>Evidence</th><th>Findings</th><th>Opened</th></tr>
+  {% for i in investigations %}<tr><td><a href="{% url 'investigation_detail' i.pk %}" class="mono">{{ i.case_number }}</a></td><td><a href="{% url 'investigation_detail' i.pk %}"><strong>{{ i.title }}</strong></a></td><td><span class="pill {{ i.status }}">{{ i.status }}</span></td><td>{{ i.evidence_count }}</td><td>{{ i.finding_count }}</td><td class="muted mono">{{ i.created_at|date:"Y-m-d H:i" }}</td></tr>{% endfor %}</table>
+  {% else %}<p class="muted">No investigations yet. Open the first case to begin evidence collection.</p>{% endif %}
+</section>
+{% endblock %}

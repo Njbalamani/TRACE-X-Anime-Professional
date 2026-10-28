@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ finding.title }} — TRACE-X{% endblock %}
+{% block content %}
+<div class="row header-row">
+  <div>
+    <h1>{{ finding.title }}</h1>
+    <p class="muted">
+      <span class="pill {{ finding.category }}">{{ finding.get_category_display }}</span>
+      <span class="pill {{ finding.severity }}">{{ finding.severity }}</span>
+      confidence {% widthratio finding.confidence 1 100 %}%
+      · {{ finding.mitre_technique }}
+      · {{ finding.get_status_display }}
+    </p>
+  </div>
+  <form method="post" action="{% url 'finding_status' investigation.pk finding.pk %}">
+    {% csrf_token %}
+    <select name="status" class="input">
+      {% for v, label in status_choices %}
+      <option value="{{ v }}" {% if v == finding.status %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn ghost" type="submit">Update</button>
+  </form>
+</div>
+
+<section class="card glow">
+  <h2>AI conclusion</h2>
+  <p>{{ finding.summary }}</p>
+  <h3>Explanation (natural language)</h3>
+  <p>{{ finding.explanation }}</p>
+</section>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Evidence-to-Conclusion traceability</h2>
+    {% if links %}
+    <table class="tbl">
+      <tr><th>Evidence</th><th>Relation</th><th>Rationale</th></tr>
+      {% for link in links %}
+      <tr>
+        <td><a href="{% url 'evidence_detail' investigation.pk link.evidence.pk %}">{{ link.evidence.title }}</a>
+          <div class="mono muted small">{{ link.evidence.short_hash }}</div></td>
+        <td><span class="pill {{ link.relation }}">{{ link.relation }}</span></td>
+        <td class="small">{{ link.rationale }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No linked evidence.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Supporting excerpts</h2>
+    {% for link in links %}
+    <blockquote class="excerpt">{{ link.excerpt }}</blockquote>
+    {% if link.timeline_event %}<p class="muted small">Timeline event: {{ link.timeline_event.title }}</p>{% endif %}
+    {% empty %}
+    <p class="muted">No excerpts.</p>
+    {% endfor %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Finding integrity</h2>
+  <p class="mono">Fingerprint: {{ integrity.recorded_hash|default:"—" }}</p>
+  <p class="mono">Now: {{ integrity.current_hash|default:"—" }}</p>
+  <span class="pill {% if integrity.valid %}ok{% else %}{% if integrity.checked %}tampered{% endif %}{% endif %}">
+    {% if integrity.checked %}{% if integrity.valid %}Verified — conclusion unchanged since creation{% else %}TAMPERED — conclusion modified{% endif %}{% else %}Not fingerprinted{% endif %}
+  </span>
+</section>
+{% endblock %}

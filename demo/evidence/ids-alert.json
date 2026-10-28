@@ -1,0 +1,2 @@
+2026-09-28 02:15:00 alert rule=ET MALWARE drive-by download signature=malware detected src=203.0.113.44 dst=198.51.100.7
+severity=3 action=blocked

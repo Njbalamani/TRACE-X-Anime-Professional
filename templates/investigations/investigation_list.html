@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Investigations — TRACE-X{% endblock %}
+{% block content %}
+<div class="row header-row">
+  <h1>Investigations</h1>
+  <form class="search" method="get">
+    <input class="input" type="search" name="q" value="{{ q }}" placeholder="Search cases...">
+    <button class="btn ghost" type="submit">Search</button>
+  </form>
+</div>
+<table class="tbl card">
+  <tr><th>Case #</th><th>Title</th><th>Status</th><th>Evidence</th><th>Findings</th><th>Created</th></tr>
+  {% for i in investigations %}
+  <tr>
+    <td><a href="{% url 'investigation_detail' i.pk %}">{{ i.case_number }}</a></td>
+    <td><a href="{% url 'investigation_detail' i.pk %}">{{ i.title }}</a></td>
+    <td><span class="pill {{ i.status }}">{{ i.status }}</span></td>
+    <td>{{ i.evidence_count }}</td>
+    <td>{{ i.finding_count }}</td>
+    <td class="muted">{{ i.created_at|date:"Y-m-d H:i" }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6" class="muted">No cases found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

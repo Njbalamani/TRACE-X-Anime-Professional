@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Integrity chain — {{ investigation.case_number }} — TRACE-X{% endblock %}
+{% block content %}
+<div class="row header-row">
+  <h1>Integrity chain</h1>
+  <a class="btn ghost" href="{% url 'investigation_detail' investigation.pk %}">Back to case</a>
+</div>
+<p class="muted">{{ investigation.case_number }} {{ investigation.title }}</p>
+
+<section class="card {% if report.valid %}glow-ok{% else %}glow-bad{% endif %}" data-aos="zoom-in">
+  <h2>Verification result</h2>
+  <div class="integrity-result">
+    {% if report.valid %}<lottie-player class="integrity-lottie" src="https://assets10.lottiefiles.com/packages/lf20_xlkxtlhp.json" background="transparent" speed="1" autoplay></lottie-player>{% endif %}
+    <p class="big">{{ report.valid|yesno:"VERIFIED — no unauthorized modification detected,TAMPERED — modification detected" }}</p>
+  </div>
+  <p>Chain: <strong>{{ report.chain.blocks }}</strong> block{% if report.chain.blocks != 1 %}s{% endif %} · checked {{ report.checked_at }}</p>
+  {% if report.chain.broken_at %}
+  <div class="msg error">Chain broken at height {{ report.chain.broken_at.height }} ({{ report.chain.broken_at.object }}).</div>
+  {% endif %}
+  {% if report.tampered_objects %}
+  <div class="msg error">Objects whose current data no longer matches their fingerprint:</div>
+  <ul>{% for t in report.tampered_objects %}<li>{{ t.object_type }} {{ t.object_id }} — {{ t.label }}</li>{% endfor %}</ul>
+  {% endif %}
+</section>
+
+<section class="card" data-aos="fade-up" data-aos-delay="120">
+  <h2>Blockchain-style records <span class="muted">(newest first)</span></h2>
+  <table class="tbl">
+    <tr><th>Height</th><th>Object</th><th>ID</th><th>Payload hash</th><th>Block hash</th><th>Recorded</th></tr>
+    {% for r in records %}
+    <tr>
+      <td class="mono">#{{ r.height }}</td>
+      <td>{{ r.object_type }}</td>
+      <td class="mono small">{{ r.object_id }}</td>
+      <td class="mono small">{{ r.payload_hash|slice:":20" }}…</td>
+      <td class="mono small">{{ r.block_hash|slice:":20" }}…</td>
+      <td class="muted small">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted small">Each block hash = SHA-256(height | timestamp | previous block hash | payload fingerprint). Changing any record invalidates every subsequent block.</p>
+</section>
+{% endblock %}

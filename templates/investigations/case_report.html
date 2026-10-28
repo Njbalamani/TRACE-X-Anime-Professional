@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head"><div><p class="eyebrow">FORENSIC REPORT</p><h1>{{ investigation.case_number }} · {{ investigation.title }}</h1><p>{{ investigation.description }}</p></div></section>
+<section class="grid">
+<div class="card"><strong>Risk score</strong><div class="metric">{{ investigation.risk_score }}/100</div></div>
+<div class="card"><strong>Evidence</strong><div class="metric">{{ evidence|length }}</div></div>
+<div class="card"><strong>Findings</strong><div class="metric">{{ findings|length }}</div></div>
+<div class="card"><strong>Chain</strong><div class="metric">{% if report.valid %}VERIFIED{% else %}TAMPERED{% endif %}</div></div>
+</section>
+<section class="card"><h2>Findings</h2>{% for f in findings %}<article class="finding"><h3>{{ f.title }}</h3><p>{{ f.summary }}</p><p><b>{{ f.severity|upper }}</b> · confidence {{ f.confidence|floatformat:0 }}% · {{ f.mitre_technique|default:"No ATT&CK mapping" }}</p></article>{% empty %}<p>No findings.</p>{% endfor %}</section>
+<section class="card"><h2>Timeline</h2>{% for e in events %}<div class="timeline-row"><b>{{ e.occurred_at|date:"Y-m-d H:i:s T" }}</b> · {{ e.title }} · {{ e.severity|upper }} · {{ e.source_ip|default:"-" }}</div>{% endfor %}</section>
+<section class="card"><h2>Integrity</h2><p>Tip: <code>{{ report.chain.tip }}</code></p><p>Anchor: <code>{{ report.chain.anchor }}</code></p><p>Blocks: {{ report.chain.blocks }} · Anchor valid: {{ report.chain.anchor_valid }}</p></section>
+{% endblock %}

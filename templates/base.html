@@ -1,0 +1,155 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}TRACE-X{% endblock %}</title>
+<script>
+  (function () {
+    document.documentElement.setAttribute(
+      "data-theme",
+      localStorage.getItem("tracex-theme") === "dark" ? "dark" : "light"
+    );
+  })();
+</script>
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+<!-- TRACE-X UI enhancement stack: AOS + GSAP + Lottie + Motion (progressive enhancement) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js" defer></script>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js" defer></script>
+<script type="module">
+  /* Motion for plain Django HTML — no React required. */
+  import { animate, inView } from "https://cdn.jsdelivr.net/npm/motion@12.23.24/+esm";
+  window.TRACEXMotion = { animate, inView };
+</script>
+</head>
+<body>
+<div class="shine-layers" aria-hidden="true">
+  <i class="halo"></i><i class="sweep sweep-a"></i><i class="sweep sweep-b"></i><i class="sweep sweep-c"></i><i class="dust dust-a"></i><i class="dust dust-b"></i>
+</div>
+<header class="topbar">
+  <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark"><i>◈</i> TRX</span><span>TRACE-X <small style="display:block;color:var(--muted);font-size:9px;letter-spacing:.08em;font-weight:600">DIGITAL FORENSICS</small></span></a>
+  <nav class="nav">
+    {% if user.is_authenticated %}
+      <a class="nav-active" href="{% url 'dashboard' %}">Overview</a>
+      <a href="{% url 'investigation_list' %}">Cases</a>
+      <a href="{% url 'investigation_create' %}">+ New case</a>
+      <a href="{% url 'users_dashboard' %}">Access</a>
+      <span class="user">{{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}" class="inline">
+        {% csrf_token %}<button class="linkbtn" type="submit">Sign out</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}">Sign in</a>
+      <a href="{% url 'signup' %}">Sign up</a>
+    {% endif %}
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">☾</button>
+  </nav>
+</header>
+<main class="container" data-aos="fade-up" data-aos-duration="650">
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}<div class="msg {{ message.tags }}">{{ message }}</div>{% endfor %}
+    </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+{% if user.is_authenticated and investigation %}
+<button class="sentinel-launcher" id="sentinel-launcher" type="button" aria-controls="sentinel-panel">◈ Sentinel AI</button>
+<section class="sentinel-panel" id="sentinel-panel" aria-label="TRACE-X Sentinel AI assistant">
+  <header class="sentinel-head">
+    <div>
+      <div class="sentinel-title"><span class="sentinel-pulse"></span><strong>TRACE-X Sentinel</strong></div>
+      <div class="sentinel-meta">Case {{ investigation.case_number }} · evidence-aware investigator assistant</div>
+    </div>
+    <button class="sentinel-close" id="sentinel-close" type="button" aria-label="Close">×</button>
+  </header>
+  <div class="sentinel-messages" id="sentinel-messages">
+    <div class="sentinel-msg ai">I’m Sentinel. Ask me about this case’s timeline, findings, evidence, integrity status, risk, or next investigative steps.</div>
+  </div>
+  <form class="sentinel-composer" id="sentinel-form">
+    <textarea class="sentinel-input" id="sentinel-input" maxlength="4000" placeholder="Ask about this investigation…" aria-label="Message"></textarea>
+    <button class="sentinel-send" id="sentinel-send" type="submit">Send</button>
+  </form>
+</section>
+{% endif %}
+<footer class="footer">
+  <span class="orn-line">❖ ✦ ❖</span><br>
+  TRACE-X &middot; Evidence-to-Conclusion traceability &middot; SHA-256 fingerprints &middot; tamper-evident hash chain
+  <div class="copyright"><span class="crown-mark">♛</span> &copy; {% now "Y" %} TRACE-X &mdash; Cyber Investigation Platform. All rights reserved.</div>
+</footer>
+<script>
+  (function () {
+    var btn = document.getElementById("theme-toggle");
+    var root = document.documentElement;
+    var icon = function () { if (btn) btn.textContent = root.getAttribute("data-theme") === "dark" ? "☀" : "☾"; };
+    icon();
+    if (btn) btn.addEventListener("click", function () {
+      var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("tracex-theme", next);
+      icon();
+    });
+
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.AOS) AOS.init({ once: true, offset: 40, duration: 650, easing: "ease-out-cubic" });
+
+      /* GSAP: subtle dashboard depth/parallax, never required for functionality. */
+      if (window.gsap) {
+        var hero = document.querySelector(".hero-pro");
+        if (hero && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          gsap.fromTo(hero.querySelectorAll(".hero-orb"),
+            { y: 12, x: 0, opacity: 0.35 },
+            { y: -12, x: 8, opacity: 0.75, duration: 4.5, stagger: 0.45, repeat: -1, yoyo: true, ease: "sine.inOut" }
+          );
+          hero.addEventListener("mousemove", function (e) {
+            var r = hero.getBoundingClientRect();
+            var x = (e.clientX - r.left) / r.width - 0.5;
+            var y = (e.clientY - r.top) / r.height - 0.5;
+            gsap.to(hero.querySelector(".hero-grid"), { x: x * 12, y: y * 8, duration: 0.6, overwrite: true });
+          });
+        }
+      }
+
+      /* Motion plain-JS micro-interactions when the ESM module is available. */
+      if (window.TRACEXMotion && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.querySelectorAll(".stat, .card.glow, .card.glow-ok, .card.glow-bad").forEach(function (el) {
+          el.addEventListener("mouseenter", function () { window.TRACEXMotion.animate(el, { y: -3, scale: 1.008 }, { duration: 0.18 }); });
+          el.addEventListener("mouseleave", function () { window.TRACEXMotion.animate(el, { y: 0, scale: 1 }, { duration: 0.22 }); });
+        });
+      }
+    });
+  })();
+</script>
+
+{% if user.is_authenticated and investigation %}
+<script>
+(function(){
+  const launch=document.getElementById('sentinel-launcher'), panel=document.getElementById('sentinel-panel');
+  const close=document.getElementById('sentinel-close'), form=document.getElementById('sentinel-form');
+  const input=document.getElementById('sentinel-input'), messages=document.getElementById('sentinel-messages'), send=document.getElementById('sentinel-send');
+  if(!launch||!panel||!form)return;
+  const history=[];
+  const add=(role,text)=>{const el=document.createElement('div');el.className='sentinel-msg '+(role==='assistant'?'ai':'user');el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;};
+  launch.onclick=()=>{panel.classList.add('open');input.focus();};
+  close.onclick=()=>panel.classList.remove('open');
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
+  form.addEventListener('submit',async e=>{
+    e.preventDefault(); const text=input.value.trim(); if(!text)return;
+    add('user',text); history.push({role:'user',content:text}); input.value=''; send.disabled=true; send.textContent='…';
+    try{
+      const r=await fetch('{% url "sentinel_chat" pk=investigation.pk %}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},body:JSON.stringify({message:text,history})});
+      const data=await r.json(); if(!r.ok)throw new Error(data.error||'Assistant request failed.');
+      add('assistant',data.answer); history.push({role:'assistant',content:data.answer});
+    }catch(err){add('assistant','Sentinel error: '+err.message);}
+    finally{send.disabled=false;send.textContent='Send';input.focus();}
+  });
+})();
+</script>
+{% endif %}
+</body>
+</html>

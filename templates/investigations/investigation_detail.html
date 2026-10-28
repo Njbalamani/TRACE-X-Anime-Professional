@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ investigation.case_number }} — TRACE-X{% endblock %}
+{% block content %}
+<div class="row header-row">
+  <div>
+    <h1>{{ investigation.title }}</h1>
+    <p class="muted">{{ investigation.case_number }} · <span class="pill {{ investigation.status }}">{{ investigation.status }}</span> · integrity: <span class="pill {{ investigation.integrity_status }}">{{ investigation.integrity_status }}</span></p>
+    {% if investigation.description %}<p>{{ investigation.description }}</p>{% endif %}
+  </div>
+  <div class="row">
+    <form method="post" action="{% url 'analyze' investigation.pk %}">
+      {% csrf_token %}
+      <button class="btn" type="submit">Run AI analysis</button>
+    </form>
+    <a class="btn ghost" href="{% url 'integrity_view' investigation.pk %}">Integrity chain</a>
+  </div>
+</div>
+
+{% if analysis %}
+<section class="card glow">
+  <h2>Analysis report</h2>
+  <p>{{ analysis.narrative }}</p>
+  <ul class="list">
+    {% for f in analysis.findings %}
+    <li>{{ f.severity|upper }} — {{ f.title }} <span class="muted">({% widthratio f.confidence 1 100 %}%, {{ f.evidence_count }} evidence)</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="grid2">
+  <section class="card">
+    <h2>Upload evidence</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'evidence_upload' investigation.pk %}">
+      {% csrf_token %}
+      <input type="file" name="files" multiple required>
+      <p class="muted">Logs (.log/.txt), email .eml, network captures (.pcap/.csv/.json), screenshots, artifacts.</p>
+      <button class="btn" type="submit">Upload &amp; fingerprint</button>
+    </form>
+    <hr>
+    <h3>Evidence <span class="muted">({{ evidence|length }})</span></h3>
+    <ul class="list">
+      {% for e in evidence %}
+      <li>
+        <a href="{% url 'evidence_detail' investigation.pk e.pk %}">
+          <span class="pill {{ e.evidence_type }}">{{ e.evidence_type }}</span> {{ e.title }}
+        </a>
+        <span class="mono muted">{{ e.short_hash }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Timeline <span class="muted">({{ events|length }} events)</span></h2>
+    {% if events %}
+    <table class="tbl">
+      <tr><th>When (UTC)</th><th>Event</th><th>Severity</th><th>Source</th></tr>
+      {% for ev in events %}
+      <tr>
+        <td class="mono">{{ ev.occurred_at|date:"m-d H:i:s" }}</td>
+        <td>
+          {{ ev.title }}
+          {% if ev.evidence %}<div class="muted small"><a href="{% url 'evidence_detail' investigation.pk ev.evidence.pk %}">{{ ev.evidence.title }}</a></div>{% endif %}
+        </td>
+        <td><span class="pill {{ ev.severity }}">{{ ev.severity }}</span></td>
+        <td class="mono">{% if ev.source_ip %}{{ ev.source_ip }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No events yet. Run AI analysis to reconstruct a timeline.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Findings <span class="muted">({{ findings|length }})</span></h2>
+  {% if findings %}
+  <table class="tbl">
+    <tr><th>Finding</th><th>Category</th><th>Severity</th><th>Confidence</th><th>Evidence linked</th><th>Status</th></tr>
+    {% for f in findings %}
+    <tr>
+      <td><a href="{% url 'finding_detail' investigation.pk f.pk %}">{{ f.title }}</a></td>
+      <td>{{ f.get_category_display }}</td>
+      <td><span class="pill {{ f.severity }}">{{ f.severity }}</span></td>
+      <td>{% widthratio f.confidence 1 100 %}%</td>
+      <td>{{ f.link_count }}</td>
+      <td>{{ f.status }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Run AI analysis to produce traceable conclusions.</p>
+  {% endif %}
+</section>
+{% endblock %}

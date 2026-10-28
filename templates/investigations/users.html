@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Users — TRACE-X{% endblock %}
+{% block content %}
+<div class="row header-row">
+  <div>
+    <h1>Investigators</h1>
+    <p class="muted">Registered TRACE-X users and their investigation activity.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="num">{{ total_users }}</span>Users</div>
+  <div class="stat"><span class="num">{{ active_investigators }}</span>Active investigators</div>
+  <div class="stat"><span class="num">{{ total_cases }}</span>Cases</div>
+  <div class="stat"><span class="num">{{ total_findings }}</span>Findings</div>
+</div>
+
+<section class="card">
+  <h2>User activity</h2>
+  <table class="tbl">
+    <tr>
+      <th>Username</th><th>Status</th><th>Cases created</th><th>Evidence uploaded</th>
+      <th>Findings generated</th><th>Last login</th><th>Joined</th>
+    </tr>
+    {% for u in users %}
+    <tr>
+      <td>
+        {{ u.username }}
+        {% if u == request.user %}<span class="pill verified">you</span>{% endif %}
+      </td>
+      <td>{% if u.is_active %}<span class="pill verified">active</span>{% else %}<span class="pill tampered">disabled</span>{% endif %}</td>
+      <td>{{ u.investigation_count }}</td>
+      <td>{{ u.evidence_count }}</td>
+      <td>{{ u.finding_count }}</td>
+      <td class="muted small">{{ u.last_login|date:"Y-m-d H:i" }}</td>
+      <td class="muted small">{{ u.date_joined|date:"Y-m-d" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted small">Counts are distinct objects attributed to each investigator across all cases.</p>
+</section>
+{% endblock %}

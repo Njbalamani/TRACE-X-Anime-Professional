@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Create account — TRACE-X{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Create investigator account</h1>
+  <p class="muted">Register to open cases, upload evidence and run analysis.</p>
+  {% if form.non_field_errors %}<div class="msg error">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post" action="{% url 'signup' %}">
+    {% csrf_token %}
+    <label>Username
+      {{ form.username }}
+    </label>
+    {% for error in form.username.errors %}<div class="field-errors">{{ error }}</div>{% endfor %}
+    <label>Password
+      {{ form.password1 }}
+    </label>
+    <ul class="hint">Your password must be:
+      <li>at least 8 characters</li>
+      <li>not too similar to your username</li>
+      <li>not a commonly used password</li>
+      <li>not entirely numeric</li>
+    </ul>
+    {% for error in form.password1.errors %}<div class="field-errors">{{ error }}</div>{% endfor %}
+    <label>Confirm password
+      {{ form.password2 }}
+    </label>
+    {% for error in form.password2.errors %}<div class="field-errors">{{ error }}</div>{% endfor %}
+    <button class="btn" type="submit">Create account</button>
+  </form>
+  <div class="auth-links">Already registered? <a href="{% url 'login' %}">Sign in</a></div>
+</div>
+{% endblock %}

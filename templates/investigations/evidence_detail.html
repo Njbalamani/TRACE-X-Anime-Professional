@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ evidence.title }} — TRACE-X{% endblock %}
+{% block content %}
+<div class="row header-row">
+  <h1>{{ evidence.title }}</h1>
+  <a class="btn ghost" href="{% url 'investigation_detail' investigation.pk %}">Back to case</a>
+</div>
+<span class="pill {{ evidence.evidence_type }}">{{ evidence.evidence_type }}</span>
+<p class="muted">{{ investigation.case_number }} {{ investigation.title }}</p>
+
+<section class="card">
+  <h2>Digital fingerprint</h2>
+  <p class="mono">SHA-256: {{ evidence.sha256 }}</p>
+  <div class="row">
+    <span class="pill {% if integrity.valid %}ok{% else %}tampered{% endif %}">
+      {% if integrity.checked %}Verified — matches recorded fingerprint{% else %}No integrity record{% endif %}
+    </span>
+    {% if integrity.checked %}
+      <span class="muted small">recorded {{ integrity.recorded_at }}</span>
+    {% endif %}
+  </div>
+  {% if evidence.file %}<p><a href="{% url "evidence_download" investigation.pk evidence.pk %}" class="btn ghost" download>Download original</a> ({{ evidence.size_bytes|filesizeformat }})</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Parsed summary</h2>
+  {% if evidence.parsed_summary %}
+  <div class="grid2 small">
+    <div><h4>Indicators</h4>{% for flag in evidence.parsed_summary.flags %}<span class="pill {{ flag }}">{{ flag }}</span> {% empty %}none{% endfor %}</div>
+    <div>
+      <h4>Entities</h4>
+      <div><strong>IPs:</strong> {% for ip in evidence.parsed_summary.entities.ips %}<span class="mono">{{ ip }}</span> {% empty %}—{% endfor %}</div>
+      <div><strong>Users:</strong> {% for u in evidence.parsed_summary.entities.users %}<span class="mono">{{ u }}</span> {% empty %}—{% endfor %}</div>
+      <div><strong>Domains:</strong> {% for d in evidence.parsed_summary.entities.domains %}<span class="mono">{{ d }}</span> {% empty %}—{% endfor %}</div>
+    </div>
+  </div>
+  {% else %}
+  <p class="muted">Not parsed yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Content</h2>
+  <pre class="codeblock">{{ evidence.content|default:"(binary artifact — use the file download)" }}</pre>
+</section>
+
+<section class="card">
+  <h2>Linked to findings (traceability)</h2>
+  {% if links %}
+  <ul class="list">
+    {% for link in links %}
+    <li>
+      <a href="{% url 'finding_detail' investigation.pk link.finding.pk %}">{{ link.finding.title }}</a>
+      <span class="pill {{ link.relation }}">{{ link.relation }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Run analysis to link this evidence to conclusions.</p>
+  {% endif %}
+</section>
+{% endblock %}

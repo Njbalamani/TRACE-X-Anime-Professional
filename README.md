@@ -23,11 +23,11 @@ evidence (logs, emails, IDS alerts, netflow) into **traceable conclusions**:
 ```bash
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_demo        # demo case TRX-0001 + user `investigator` / `tracex123`
+python manage.py seed_demo        # demo case TRX-0001
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000/ and sign in as `investigator` / `tracex123`.
+Open http://127.0.0.1:8000/ and sign in with credentials created by `seed_demo`.
 
 Demo evidence files live in `demo/evidence/` and are loaded by `seed_demo`
 (fallback content is embedded in the command if the folder is missing).
